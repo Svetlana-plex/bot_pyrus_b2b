@@ -10,8 +10,8 @@ class PyrusB2BBot:
     def __init__(self):
         self.pyrus_api_key = os.getenv("PYRUS_API_KEY")
         self.pyrus_form_id = os.getenv("PYRUS_FORM_ID")
-        self.pyrus_base_url = "https://pyrus.com/api/v4"
-        self.b2b_url = os.getenv("B2B_CENTER_URL")
+        self.pyrus_base_url = os.getenv("PYRUS_BASE_URL")
+        self.b2b_url = os.getenv("B2B_CENTER_BASE_URL")
         self.b2b_auth = (os.getenv("B2B_CENTER_USERNAME"), os.getenv("B2B_CENTER_PASSWORD"))
         self.pyrus_headers = {
             "Authorization": f"Bearer {self.pyrus_api_key}",
@@ -127,4 +127,4 @@ class PyrusB2BBot:
 # Запуск бота
 if __name__ == "__main__":
     bot = PyrusB2BBot()
-    bot.run(174)  # замените на ID задачи Pyrus
+    bot.run(174)  # заменить на ID задачи Pyrus
