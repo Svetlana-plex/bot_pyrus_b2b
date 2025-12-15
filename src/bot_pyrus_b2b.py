@@ -127,4 +127,4 @@ class PyrusB2BBot:
 # Запуск бота
 if __name__ == "__main__":
     bot = PyrusB2BBot()
-    bot.run("ВАШ_ID_ЗАДАЧИ_PYRUS")  # замените на ID задачи Pyrus
+    bot.run(174)  # замените на ID задачи Pyrus
