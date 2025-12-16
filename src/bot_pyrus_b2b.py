@@ -149,13 +149,13 @@ class PyrusB2BBot:
         @self.app.route('/load-participants/<purchase_id>', methods=['GET'])
         def load_b2b_participants(purchase_id):
             try:
-                # Если данные раньше приходили в теле POST-запроса (request.get_data()),
-                # то теперь их нужно получать из параметров GET-запроса (request.args)
-                request_body = request.args  # или request.args.to_dict() для словаря
-                signature = request.headers.get('X-Pyrus-Signature')
+                # # Если данные раньше приходили в теле POST-запроса (request.get_data()),
+                # # то теперь их нужно получать из параметров GET-запроса (request.args)
+                # request_body = request.args  # или request.args.to_dict() для словаря
+                # signature = request.headers.get('X-Pyrus-Signature')
 
-                if not self.verify_webhook(request_body, signature):
-                    return jsonify({"error": "Invalid signature"}), 401
+                # if not self.verify_webhook(request_body, signature):
+                #     return jsonify({"error": "Invalid signature"}), 401
 
                 participants = self.get_b2b_participants(purchase_id)
 
