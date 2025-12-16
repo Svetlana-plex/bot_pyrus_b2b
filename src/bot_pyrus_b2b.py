@@ -146,10 +146,12 @@ class PyrusB2BBot:
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
-        @self.app.route('/load-participants/<purchase_id>', methods=['POST'])
+        @self.app.route('/load-participants/<purchase_id>', methods=['GET'])
         def load_b2b_participants(purchase_id):
             try:
-                request_body = request.get_data()
+                # Если данные раньше приходили в теле POST-запроса (request.get_data()),
+                # то теперь их нужно получать из параметров GET-запроса (request.args)
+                request_body = request.args  # или request.args.to_dict() для словаря
                 signature = request.headers.get('X-Pyrus-Signature')
 
                 if not self.verify_webhook(request_body, signature):
@@ -166,6 +168,7 @@ class PyrusB2BBot:
 
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     bot = PyrusB2BBot()
