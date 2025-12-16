@@ -20,7 +20,6 @@ class PyrusB2BBot:
             "Authorization": f"Bearer {self.pyrus_api_key}",
             "Content-Type": "application/json"
         }
-        self.webhook_secret = os.getenv("WEBHOOK_SECRET")
         self.app = Flask(__name__)
         self._setup_routes()
 
@@ -31,12 +30,6 @@ class PyrusB2BBot:
             message = message.encode('utf-8')
         digest = hmac.new(secret, msg=message, digestmod=hashlib.sha1).hexdigest()
         return hmac.compare_digest(digest, signature.lower())
-
-    def verify_webhook(self, request_body, signature):
-        """Проверяет подпись вебхука от Pyrus."""
-        if not self.webhook_secret:
-            raise ValueError("WEBHOOK_SECRET не задан в окружении")
-        return self._is_signature_correct(request_body, self.webhook_secret, signature)
 
     def get_pyrus_purchase(self, pyrus_task_id):
         """Получить данные о закупке из Pyrus по ID задачи."""
@@ -112,15 +105,6 @@ class PyrusB2BBot:
             }
             documents.append(doc)
         return documents
-
-    def _find_task_by_purchase_id(self, purchase_id):
-        """
-        Вспомогательный метод: найти task_id по purchase_id.
-        В реальной системе нужно реализовать запрос к API Pyrus для поиска задачи.
-        """
-        # Здесь должна быть реализация поиска через API Pyrus
-        # Для примера возвращаем None (замените на реальную логику)
-        return None
 
     def _setup_routes(self):
         @self.app.route('/create-b2b/<purchase_id>', methods=['POST'])
