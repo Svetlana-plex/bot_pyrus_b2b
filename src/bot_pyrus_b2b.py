@@ -130,11 +130,6 @@ class PyrusB2BBot:
             auth=self.b2b_auth
         )
 
-    def _find_task_by_purchase_id(self, purchase_id):
-        """Найти ID задачи Pyrus по purchase_id."""
-        # Логика поиска задачи по purchase_id (реализуйте согласно API Pyrus)
-        pass
-
     def _setup_routes(self):
         @self.app.route('/create-b2b/<purchase_id>', methods=['POST'])
         def create_b2b_purchase(purchase_id):
