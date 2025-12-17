@@ -106,6 +106,35 @@ class PyrusB2BBot:
             documents.append(doc)
         return documents
 
+    def extract_participants(self, pyrus_purchase):
+        """Извлечь данные об участниках закупки."""
+        participants = []
+        for field in pyrus_purchase["fields"]:
+            if "participant" in field["id"]:
+                participant = {
+                    "inn": field.get("inn"),
+                    "name": field.get("name"),
+                    "status": field.get("status"),  # статус благонадёжности
+                    "documents_url": field.get("documents_url")
+                }
+                participants.append(participant)
+        return participants
+
+    def sync_participants_to_b2b(self, purchase_id, task_id):
+        """Синхронизировать участников закупки в B2B-Center."""
+        pyrus_purchase = self.get_pyrus_purchase(task_id)
+        participants_data = self.extract_participants(pyrus_purchase)
+        requests.post(
+            f"{self.b2b_url}/purchases/{purchase_id}/participants",
+            json={"participants": participants_data},
+            auth=self.b2b_auth
+        )
+
+    def _find_task_by_purchase_id(self, purchase_id):
+        """Найти ID задачи Pyrus по purchase_id."""
+        # Логика поиска задачи по purchase_id (реализуйте согласно API Pyrus)
+        pass
+
     def _setup_routes(self):
         @self.app.route('/create-b2b/<purchase_id>', methods=['POST'])
         def create_b2b_purchase(purchase_id):
@@ -113,7 +142,7 @@ class PyrusB2BBot:
                 request_body = request.get_data()
                 signature = request.headers.get('X-Pyrus-Signature')
 
-                if not self.verify_webhook(request_body, signature):
+                if not self._is_signature_correct(request_body, os.getenv("WEBHOOK_SECRET"), signature):
                     return jsonify({"error": "Invalid signature"}), 401
 
                 if self.check_purchase_in_b2b(purchase_id):
@@ -134,43 +163,29 @@ class PyrusB2BBot:
                     "b2b_id": pyrus_purchase.get("b2b_id"),
                     "lots": self.extract_lots(pyrus_purchase),
                     "documents": self.extract_documents(pyrus_purchase),
-                    "deadline": pyrus_purchase.get("deadline")
+                    "deadline": pyrus_purchase.get("deadline"),
+                    "participants": self.extract_participants(pyrus_purchase)
                 }
 
                 b2b_purchase_id = self.create_purchase_in_b2b(purchase_data)
+                self.sync_participants_to_b2b(b2b_purchase_id, task_id)
+
                 return jsonify({
                     "status": "created",
                     "purchase_id": b2b_purchase_id
                 }), 201
-
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
 
         @self.app.route('/load-participants/<purchase_id>', methods=['GET'])
         def load_b2b_participants(purchase_id):
             try:
-                # # Если данные раньше приходили в теле POST-запроса (request.get_data()),
-                # # то теперь их нужно получать из параметров GET-запроса (request.args)
-                # request_body = request.args  # или request.args.to_dict() для словаря
-                # signature = request.headers.get('X-Pyrus-Signature')
-
-                # if not self.verify_webhook(request_body, signature):
-                #     return jsonify({"error": "Invalid signature"}), 401
-
                 participants = self.get_b2b_participants(purchase_id)
-
                 return jsonify({
                     "status": "success",
                     "purchase_id": purchase_id,
                     "participants_count": len(participants),
                     "participants": participants
                 }), 200
-
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
-
-
-if __name__ == "__main__":
-    bot = PyrusB2BBot()
-    # Запускаем сервер на порту 5000
-    bot.app.run(host='0.0.0.0', port=5000, debug=False)
